@@ -26,11 +26,33 @@ chrome.runtime.onMessage.addListener(
                 message: request.message
             });
         } else if (request.sender === 'asbplayer-popup') {
-            for (const tabId in tabs) {
-                chrome.tabs.sendMessage(tabs[tabId].tab.id, {
+            if (request.message.command === 'settings-updated') {
+                for (const tabId in tabs) {
+                    chrome.tabs.sendMessage(tabs[tabId].tab.id, {
+                        sender: 'asbplayer-extension-to-video',
+                        message: {
+                            command: 'settings-updated'
+                        }
+                    });
+                }
+            } else if (request.message.command === 'query-active-tab') {
+                console.log('query active tab');
+                chrome.tabs.query({active: true}, (tabs) => {
+                    if (tabs.length > 0) {
+                        sendResponse({id: tabs[0].id});
+                    }
+                });
+
+                return true;
+            }
+
+            if (request.message.command === 'tab-media-stream') {
+                console.log('sending to ' + request.message.tabId + ' streamId' + request.message.streamId);
+                chrome.tabs.sendMessage(request.message.tabId, {
                     sender: 'asbplayer-extension-to-video',
                     message: {
-                        command: 'settings-updated'
+                        command: 'tab-media-stream',
+                        streamId: request.message.streamId
                     }
                 });
             }

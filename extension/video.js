@@ -187,6 +187,9 @@ class Binding {
                     case 'settings-updated':
                         this._refreshSettings();
                         break;
+                    case 'tab-media-stream':
+                        this._captureAudio(request.message.streamId);
+                        break;
                 }
             }
         };
@@ -294,7 +297,12 @@ class Binding {
             div.className = "asbplayer-subtitles";
             this._applyNonFullscreenStyles(div);
             document.body.appendChild(div);
-
+            div.onclick = () => {
+                    console.log(chrome);
+                    chrome.tabCapture.capture({audio: true}, (stream) => {
+                    console.log(stream);
+                });
+            };
             function toggle() {
                 if (document.fullscreenElement) {
                     div.style.display = "none";
@@ -396,4 +404,52 @@ class Binding {
 
         return true;
     }
+
+    _captureAudio(streamId) {
+          navigator.mediaDevices.getUserMedia({
+            video: false,
+            audio: true,
+            audio: {
+              mandatory: {
+                chromeMediaSource: 'tab',
+                chromeMediaSourceId: streamId
+              }
+            }
+          })
+          .then((stream) => {
+            this.context = new AudioContext();
+            this.stream = this.context.createMediaStreamSource(stream);
+            this.stream.connect(this.context.destination);
+
+//                const recorder = new MediaRecorder(stream);
+//                const chunks = [];
+//                recorder.ondataavailable = (e) => {
+//                    chunks.push(e.data);
+//                };
+//                recorder.onstop = (e) => {
+//                    this._saveToFile(
+//                        new Blob(chunks),
+//                        "test.wav"
+//                    );
+//
+//                    resolve();
+//                };
+//                recorder.start();
+//                setTimeout(() => {
+//                    recorder.stop();
+//                }, 5000);
+          });
+    }
+
+        _saveToFile(blob, name) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            document.body.appendChild(a);
+            a.style = "display: none";
+            a.href = url;
+            a.download = name;
+            a.click();
+            URL.revokeObjectURL(url);
+            a.remove();
+        }
 }
