@@ -79,7 +79,7 @@ function trackLength(audioRef, videoRef, subtitles, useOffset) {
 }
 
 export default function Player(props) {
-    const {subtitleReader, settingsProvider, extension, offsetRef, videoFrameRef, drawerOpen, tab, availableTabs, onError, onUnloadVideo, onCopy, onLoaded, onTabSelected, disableKeyEvents} = props;
+    const {subtitleReader, settingsProvider, extension, offsetRef, videoFrameRef, drawerOpen, tab, availableTabs, onError, onUnloadVideo, onCopy, onLoaded, onTabSelected, disableKeyEvents, lastUpdatedCard} = props;
     const {subtitleFile, audioFile, audioFileUrl, videoFile, videoFileUrl} = props.sources;
     const [subtitles, setSubtitles] = useState();
     const subtitlesRef = useRef();
@@ -95,6 +95,9 @@ export default function Player(props) {
     const [offset, setOffset] = useState(0);
     const [channelId, setChannelId] = useState();
     const [videoPopOut, setVideoPopOut] = useState(false);
+    const [playOnLastCardUpdated, setPlayOnLastCardUpdated] = useState(false);
+    const playOnLastCardUpdatedRef = useRef();
+    playOnLastCardUpdatedRef.current = playOnLastCardUpdatedRef;
     const [hideSubtitlePlayer, setHideSubtitlePlayer] = useState(false);
     const hideSubtitlePlayerRef = useRef();
     hideSubtitlePlayerRef.current = hideSubtitlePlayer;
@@ -266,15 +269,22 @@ export default function Player(props) {
                         channel.onPlay((forwardToMedia) => play(clock, mediaAdapter, forwardToMedia));
                         channel.onPause((forwardToMedia) => pause(clock, mediaAdapter, forwardToMedia));
                         channel.onOffset((offset) => applyOffset(Math.max(-lengthRef.current ?? 0, offset), false));
-                        channel.onCopy((subtitle, audio, image) => onCopy(
-                            subtitle,
-                            audioFile,
-                            videoFile,
-                            subtitleFile,
-                            channel.selectedAudioTrack,
-                            audio,
-                            image
-                        ));
+                        channel.onCopy((subtitle, audio, image, updateLastCard) => {
+                            if (playingRef.current && updateLastCard) {
+                                setPlayOnLastCardUpdated(true);
+                            }
+
+                            onCopy(
+                                subtitle,
+                                audioFile,
+                                videoFile,
+                                subtitleFile,
+                                channel.selectedAudioTrack,
+                                audio,
+                                image,
+                                updateLastCard
+                            );
+                        });
                         channel.onCondensedModeToggle(() => setCondensedModeEnabled(enabled => {
                             const newValue = !enabled;
                             channel.condensedModeToggle(newValue);
@@ -417,6 +427,17 @@ export default function Player(props) {
         }
     };
 
+    useEffect(() => {
+        if (lastUpdatedCard) {
+            videoRef.current?.cardUpdated(lastUpdatedCard);
+        }
+
+        if (playOnLastCardUpdated.current) {
+            setPlayOnLastCardUpdated(false);
+            play(clock, mediaAdapter, true);
+        }
+    }, [lastUpdatedCard, clock, mediaAdapter]);
+
     const handlePlay = useCallback(() => play(clock, mediaAdapter, true), [clock, mediaAdapter]);
     const handlePause = useCallback(() => pause(clock, mediaAdapter, true), [clock, mediaAdapter]);
     const handleSeek = useCallback(async (progress) => {
@@ -452,15 +473,23 @@ export default function Player(props) {
         }
     }, [clock, seek, mediaAdapter]);
 
-    const handleCopy = useCallback((subtitle, audioBase64) => {
+    const handleCopy = useCallback((subtitle, updateLastCard) => {
+        if (updateLastCard && playing && (audioFile || videoFile)) {
+            pause(clock, mediaAdapter, true);
+            setPlayOnLastCardUpdated(true);
+        }
+
         onCopy(
             subtitle,
             audioFile,
             videoFile,
             subtitleFile,
-            selectedAudioTrack
+            selectedAudioTrack,
+            null,
+            null,
+            updateLastCard
         );
-    }, [onCopy, audioFile, videoFile, subtitleFile, selectedAudioTrack]);
+    }, [onCopy, audioFile, videoFile, subtitleFile, selectedAudioTrack, clock, mediaAdapter]);
 
     const handleMouseMove = useCallback((e) => {
         mousePositionRef.current.x = e.screenX;

@@ -160,6 +160,8 @@ export default function VideoPlayer(props) {
     const playerChannel = useMemo(() => new PlayerChannel(channel), [channel]);
     const [playing, setPlaying] = useState(false);
     const fullscreen = useFullscreen();
+    const fullscreenRef = useRef();
+    fullscreenRef.current = fullscreen;
     const playingRef = useRef();
     playingRef.current = playing;
     const [length, setLength] = useState(0);
@@ -263,6 +265,12 @@ export default function VideoPlayer(props) {
 
         playerChannel.onCondensedModeToggle((enabled) => setCondensedModeEnabled(enabled));
         playerChannel.onHideSubtitlePlayerToggle((hidden) => setSubtitlePlayerHidden(hidden));
+        playerChannel.onCardUpdated((card) => {
+            if (fullscreenRef.current) {
+                setAlert("Updated card: " + card);
+                setAlertOpen(true);
+            }
+        });
 
         window.onbeforeunload = (e) => {
             if (!poppingInRef.current) {
@@ -368,12 +376,33 @@ export default function VideoPlayer(props) {
             (event, subtitle) => {
                 event.stopPropagation();
                 event.preventDefault();
-                playerChannel.copy(subtitle);
+                playerChannel.copy(subtitle, false);
 
                 if (fullscreen) {
                     setAlert("Copied " + subtitle.text);
                     setAlertOpen(true);
                 }
+            },
+            () => false,
+            () => {
+                if (!showSubtitlesRef.current || showSubtitlesRef.current.length === 0) {
+                    return null;
+                }
+
+                return showSubtitlesRef.current[0];
+            }
+        );
+
+        return () => unbind();
+    }, [playerChannel, fullscreen]);
+
+    useEffect(() => {
+        const unbind = KeyBindings.bindCopyAndUpdateLastCard(
+            (event, subtitle) => {
+                event.stopPropagation();
+                event.preventDefault();
+                playerChannel.pause();
+                playerChannel.copy(subtitle, true);
             },
             () => false,
             () => {

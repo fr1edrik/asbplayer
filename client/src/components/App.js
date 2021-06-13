@@ -192,6 +192,7 @@ function App() {
     const drawerWidth = Math.max(minDrawerSize, width * drawerRatio);
     const [copiedSubtitles, setCopiedSubtitles] = useState([]);
     const [copyHistoryOpen, setCopyHistoryOpen] = useState(false);
+    const [lastUpdatedCard, setLastUpdatedCard] = useState();
     const [alert, setAlert] = useState();
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertSeverity, setAlertSeverity] = useState();
@@ -215,8 +216,8 @@ function App() {
     const fileInputRef = useRef();
     const { subtitleFile } = sources;
 
-    const handleCopy = useCallback((subtitle, audioFile, videoFile, subtitleFile, audioTrack, audio, image) => {
-        setCopiedSubtitles(copiedSubtitles => [...copiedSubtitles, {
+    const handleCopy = useCallback(async (subtitle, audioFile, videoFile, subtitleFile, audioTrack, audio, image, updateLast) => {
+        const item = {
             ...subtitle,
             timestamp: Date.now(),
             name: fileName,
@@ -226,11 +227,40 @@ function App() {
             audioTrack: audioTrack,
             audio: audio,
             image: image
-        }]);
-        setAlertSeverity("success");
-        setAlert("Copied " + subtitle.text);
-        setAlertOpen(true);
-    }, [fileName]);
+        };
+        setCopiedSubtitles(copiedSubtitles => [...copiedSubtitles, item]);
+
+        if (updateLast) {
+            try {
+                let audioClip = audioClipFromItem(item, offsetRef.current || 0);
+
+                if (settingsProvider.preferMp3) {
+                    audioClip = audioClip.toMp3();
+                }
+
+                const result = await anki.updateLast(
+                    subtitle.text,
+                    audioClip,
+                    imageFromItem(item, offsetRef.current || 0),
+                    subtitleFile.name
+                );
+
+                setLastUpdatedCard(result);
+                setAlertSeverity("success");
+                setAlert("Updated card: " + result);
+                setAlertOpen(true);
+            } catch (e) {
+                console.error(e);
+                setAlertSeverity("error");
+                setAlert("Failed to update card: " + e.message);
+                setAlertOpen(true);
+            }
+        } else {
+            setAlertSeverity("success");
+            setAlert("Copied " + subtitle.text);
+            setAlertOpen(true);
+        }
+    }, [fileName, anki, settingsProvider]);
 
     const handleOpenCopyHistory = useCallback(() => setCopyHistoryOpen(copyHistoryOpen => !copyHistoryOpen), []);
     const handleCloseCopyHistory = useCallback(() => setCopyHistoryOpen(false), []);
@@ -299,9 +329,9 @@ function App() {
         });
     }, [sources]);
 
-    const handleClipAudio = useCallback(async (item) => {
+    const handleClipAudio = useCallback((item) => {
         try {
-            const clip = await audioClipFromItem(item, offsetRef.current || 0);
+            const clip = audioClipFromItem(item, offsetRef.current || 0);
 
             if (settingsProvider.preferMp3) {
                 clip.toMp3().download();
@@ -316,7 +346,7 @@ function App() {
 
     const handleDownloadImage = useCallback(async (item) => {
         try {
-            await imageFromItem(item, offsetRef.current || 0).download();
+            imageFromItem(item, offsetRef.current || 0).download();
         } catch(e) {
             console.error(e);
             handleError(e.message);
@@ -679,6 +709,7 @@ function App() {
                                         extension={extension}
                                         drawerOpen={copyHistoryOpen}
                                         disableKeyEvents={disableKeyEvents}
+                                        lastUpdatedCard={lastUpdatedCard}
                                     />
                                 </Content>
                             </div>

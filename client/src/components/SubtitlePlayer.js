@@ -359,31 +359,43 @@ export default function SubtitlePlayer({
         }
     }, [hidden, jumpToSubtitle, subtitles, subtitleRefs]);
 
-    function copy(event, subtitle, onCopy) {
+    function copy(event, subtitle, onCopy, updateLastCard) {
         event.preventDefault();
         event.stopPropagation();
         navigator.clipboard.writeText(subtitle.text);
-        onCopy(subtitle);
+        onCopy(subtitle, updateLastCard);
     }
+
+    const currentSubtitle = useCallback((subtitles) => {
+        const subtitleIndexes = Object.keys(selectedSubtitleIndexesRef.current);
+
+        if (!subtitleIndexes || subtitleIndexes.length === 0) {
+            return null;
+        }
+
+        const index = Math.min(...subtitleIndexes);
+        return subtitles[index];
+    }, []);
 
     useEffect(() => {
         const unbind = KeyBindings.bindCopy(
-            (event, subtitle) => copy(event, subtitle, onCopy),
+            (event, subtitle) => copy(event, subtitle, onCopy, false),
             () => disableKeyEventsRef.current,
-            () => {
-                const subtitleIndexes = Object.keys(selectedSubtitleIndexesRef.current);
-
-                if (!subtitleIndexes || subtitleIndexes.length === 0) {
-                    return null;
-                }
-
-                const index = Math.min(...subtitleIndexes);
-                return subtitles[index];
-            }
+            () => currentSubtitle(subtitles)
         );
 
         return () => unbind();
-    }, [subtitles, onCopy]);
+    }, [subtitles, onCopy, currentSubtitle]);
+
+    useEffect(() => {
+        const unbind = KeyBindings.bindCopyAndUpdateLastCard(
+            (event, subtitle) => copy(event, subtitle, onCopy, true),
+            () => disableKeyEventsRef.current,
+            () => currentSubtitle(subtitles)
+        );
+
+        return () => unbind();
+    }, [subtitles, onCopy, currentSubtitle]);
 
     const handleClick = useCallback((index) => {
         const selectedSubtitleIndexes = selectedSubtitleIndexesRef.current || {};

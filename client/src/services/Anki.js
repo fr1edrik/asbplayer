@@ -54,6 +54,71 @@ export default class Anki {
         return `"${escaped}"`
     }
 
+    async updateLast(text, audioClip, image, source, ankiConnectUrl) {
+        const recentNotes = (await this._executeAction(
+            'findNotes',
+            {query: 'added:1'},
+            ankiConnectUrl
+        )).result.sort();
+
+        if (recentNotes.length === 0) {
+            throw new Error('Could not find note to update');
+        }
+
+        const fields = {};
+
+        this._appendField(fields, this.settingsProvider.sentenceField, text, true);
+        this._appendField(fields, this.settingsProvider.sourceField, source, false);
+        const lastNoteId = recentNotes[recentNotes.length - 1];
+
+        const params = {
+            note: {
+                id: lastNoteId,
+                deckName: this.settingsProvider.deck,
+                modelName: this.settingsProvider.noteType,
+                options: {
+                    allowDuplicate: false,
+                    duplicateScope: 'deck',
+                    duplicateScopeOptions: {
+                        deckName: this.settingsProvider.deck,
+                        checkChildren: false
+                    }
+                }
+            }
+        };
+
+        if (this.settingsProvider.audioField && audioClip) {
+            params.note.audio = {
+                filename: audioClip.name,
+                data: await audioClip.base64(),
+                fields: [
+                    this.settingsProvider.audioField
+                ]
+            };
+        }
+
+        if (this.settingsProvider.imageField && image) {
+            params.note.picture = {
+                filename: image.name,
+                data: await image.base64(),
+                fields: [
+                    this.settingsProvider.imageField
+                ]
+            }
+        }
+
+        params.note.fields = fields;
+        await this._executeAction('updateNoteFields', params, ankiConnectUrl);
+
+        const updatedNote = (await this._executeAction('notesInfo', {notes: [lastNoteId]})).result[0];
+
+        if (this.settingsProvider.wordField) {
+            return updatedNote.fields[this.settingsProvider.wordField].value;
+        }
+
+        return Object.keys(updatedNote.fields).map(key => updatedNote.fields[key].value).join(',');
+    }
+
     async export(text, definition, audioClip, image, word, source, customFieldValues, gui, ankiConnectUrl) {
         const fields = {};
 

@@ -13,6 +13,7 @@ export default class PlayerChannel {
         this.subtitlesCallbacks = [];
         this.condensedModeToggleCallbacks = [];
         this.hideSubtitlePlayerToggleCallbacks = [];
+        this.cardUpdatedCallbacks = [];
 
         const that = this;
 
@@ -69,6 +70,11 @@ export default class PlayerChannel {
                         callback(event.data.value);
                     }
                     break;
+                case 'cardUpdated':
+                    for (let callback of that.cardUpdatedCallbacks) {
+                        callback(event.data.value);
+                    }
+                    break;
                 default:
                     console.error('Unrecognized event ' + event.data.command);
             }
@@ -120,6 +126,10 @@ export default class PlayerChannel {
         this.hideSubtitlePlayerToggleCallbacks.push(callback);
     }
 
+    onCardUpdated(callback) {
+        this.cardUpdatedCallbacks.push(callback);
+    }
+
     ready(duration, paused, audioTracks, selectedAudioTrack) {
         this.channel?.postMessage({
             command: 'ready',
@@ -155,8 +165,8 @@ export default class PlayerChannel {
         this.channel?.postMessage({command: 'popOutToggle'});
     }
 
-    copy(subtitle) {
-        this.channel?.postMessage({command: 'copy', subtitle: subtitle});
+    copy(subtitle, updateLastCard) {
+        this.channel?.postMessage({command: 'copy', subtitle: subtitle, updateLastCard: updateLastCard});
     }
 
     condensedModeToggle() {

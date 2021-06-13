@@ -22,6 +22,26 @@ export default class KeyBindings {
         }, useCapture);
     }
 
+    static bindCopyAndUpdateLastCard(onCopyAndUpdateLastCard, disabledGetter, subtitleGetter, useCapture = false) {
+        return KeyBindings._bind((event) => {
+            if (disabledGetter()) {
+                return;
+            }
+
+            if (!KeyEvents.detectCopyAndUpdateLastCard(event)) {
+                return;
+            }
+
+            const subtitle = subtitleGetter();
+
+            if (!subtitle) {
+                return;
+            }
+
+            onCopyAndUpdateLastCard(event, subtitle);
+        }, useCapture);
+    }
+
     static bindSeekToSubtitle(onSeekToSubtitle, disabledGetter, timeGetter, subtitlesGetter, useCapture = false) {
         return KeyBindings._bind((event) => {
             if (disabledGetter()) {

@@ -2,7 +2,12 @@ export default class KeyEvents {
 
     static detectCopy(event) {
         // Ctrl + Shift + A
-        return event.ctrlKey && event.shiftKey && event.keyCode === 65;
+        return !KeyEvents.detectCopyAndUpdateLastCard(event) && event.ctrlKey && event.shiftKey && event.keyCode === 65;
+    }
+
+    static detectCopyAndUpdateLastCard(event) {
+        // Ctrl + Shift + S
+        return event.ctrlKey && event.shiftKey && event.keyCode === 83;
     }
 
     static detectDecreaseOffset(event) {
@@ -37,6 +42,6 @@ export default class KeyEvents {
 
     static detectToggleSubtitles(event) {
         // S
-        return event.keyCode === 83;
+        return !KeyEvents.detectCopyAndUpdateLastCard(event) && event.keyCode === 83;
     }
 }

@@ -79,7 +79,7 @@ export default class VideoChannel {
                     break;
                 case 'copy':
                     for (let callback of that.copyCallbacks) {
-                        callback(event.data.subtitle, event.data.audio, event.data.image);
+                        callback(event.data.subtitle, event.data.audio, event.data.image, event.data.updateLastCard);
                     }
                     break;
                 case 'condensedModeToggle':
@@ -192,6 +192,10 @@ export default class VideoChannel {
 
     hideSubtitlePlayerToggle(hidden) {
         this.protocol.postMessage({command: 'hideSubtitlePlayerToggle', value: hidden});
+    }
+
+    cardUpdated(card) {
+        this.protocol.postMessage({command: 'cardUpdated', value: card});
     }
 
     close() {
