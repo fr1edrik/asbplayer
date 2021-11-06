@@ -14,8 +14,9 @@ interface VideoElementInfo {
 
 export default class TabRegistry {
 
-    asbplayers: {[key: string]: AsbplayerTabInfo};
+    asbplayers: {[key: number]: AsbplayerTabInfo};
     videoElements: {[key: string]: VideoElementInfo};
+    
     private readonly settings: Settings;
 
     constructor(settings: Settings) {
@@ -75,7 +76,7 @@ export default class TabRegistry {
         });
     }
 
-    async findAsbplayerTab(currentTab) {
+    async findAsbplayerTab(currentTab: chrome.tabs.Tab): Promise<number> {
         let chosenTabId = null;
         const now = Date.now();
         let min = null;
@@ -107,14 +108,14 @@ export default class TabRegistry {
         });
     }
 
-    private _anyAsbplayerTab(resolve, reject, attempt, maxAttempts) {
+    private _anyAsbplayerTab(resolve: (value: number) => void, reject: (reason?: any) => void, attempt: number, maxAttempts: number): void {
         if (attempt >= maxAttempts) {
             reject(new Error("Could not find or create an asbplayer tab"));
             return;
         }
 
         for (const tabId in this.asbplayers) {
-            resolve(tabId);
+            resolve(Number(tabId));
             return;
         }
 

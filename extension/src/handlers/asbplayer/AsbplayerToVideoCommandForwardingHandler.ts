@@ -11,14 +11,14 @@ export default class AsbplayerToVideoCommandForwardingHandler {
     }
 
     handle(command: Command<Message>, sender: chrome.runtime.MessageSender) {
-        const asbplayerToExtensionCommand = command as AsbPlayerToVideoCommand<Message>;
-
-        chrome.tabs.sendMessage(asbplayerToExtensionCommand.tabId, {
+        const asbplayerToVideoCommand = command as AsbPlayerToVideoCommand<Message>;
+        const extensionToVideoCommand: ExtensionToVideoCommand<Message> = {
             sender: 'asbplayer-extension-to-video',
-            message: asbplayerToExtensionCommand.message,
-            src: asbplayerToExtensionCommand.src
-        });
+            message: asbplayerToVideoCommand.message,
+            src: asbplayerToVideoCommand.src
+        };
 
+        chrome.tabs.sendMessage(asbplayerToVideoCommand.tabId, extensionToVideoCommand);
         return false;
     }
 }

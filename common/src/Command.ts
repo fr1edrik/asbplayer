@@ -6,11 +6,6 @@ export interface Command<T extends Message> {
     message: T
 }
 
-export interface AsbPlayerToVideoCommandV2<T extends Message> extends Command<T> {
-
-    sender: "asbplayerv2"
-}
-
 export interface AsbPlayerToVideoCommand<T extends Message> extends Command<T> {
 
     sender: "asbplayer",
@@ -28,6 +23,5 @@ export interface AsbPlayerToVideoCommandV2<T extends Message> extends Command<T>
 export interface ExtensionToVideoCommand<T extends Message> extends Command<T> {
 
     sender: "asbplayer-extension-to-video",
-    tabId: number,
     src: string,
 }

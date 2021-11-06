@@ -1,9 +1,14 @@
 import AudioRecorder from '../../services/AudioRecorder';
 import ImageCapturer from '../../services/ImageCapturer';
 import { v4 as uuidv4 } from 'uuid';
+import { Command, Message } from '@project/common';
 
 export default class RecordMediaHandler {
-    constructor(audioRecorder, imageCapturer) {
+
+    private readonly audioRecorder: AudioRecorder;
+    private readonly imageCapturer: ImageCapturer;
+
+    constructor(audioRecorder: AudioRecorder, imageCapturer: ImageCapturer) {
         this.audioRecorder = audioRecorder;
         this.imageCapturer = imageCapturer;
     }
@@ -16,52 +21,47 @@ export default class RecordMediaHandler {
         return 'record-media-and-forward-subtitle';
     }
 
-    async handle(request, sender) {
+    async handle(command: Command<Message>, sender: chrome.runtime.MessageSender) {
         const windowActive = await this._isWindowActive(sender.tab.windowId);
 
         if (!windowActive) {
-            console.error('Received record request from wrong window.');
+            console.error("Received record request from wrong window.");
             return;
         }
 
         const itemId = uuidv4();
-        const subtitle = request.message.subtitle;
+        const subtitle = command.message.subtitle;
         const message = {
             command: 'copy',
             id: itemId,
             subtitle: subtitle,
-            surroundingSubtitles: request.message.surroundingSubtitles,
+            surroundingSubtitles: command.message.surroundingSubtitles
         };
 
-        let audioPromise = null;
-        let imagePromise = null;
+        let audioPromise: Promise<string> = null;
+        let imagePromise: Promise<string> = null;
 
-        if (request.message.record) {
-            const time =
-                (subtitle.end - subtitle.start) / request.message.playbackRate + request.message.audioPaddingEnd;
+        if (command.message.record) {
+            const time = (subtitle.end - subtitle.start) / command.message.playbackRate + command.message.audioPaddingEnd;
             audioPromise = this.audioRecorder.startWithTimeout(time);
         }
 
-        if (request.message.screenshot) {
-            imagePromise = this.imageCapturer.capture(
-                request.message.rect,
-                request.message.maxImageWidth,
-                request.message.maxImageHeight
-            );
+        if (command.message.screenshot) {
+            imagePromise = this.imageCapturer.capture(command.message.rect, command.message.maxImageWidth, command.message.maxImageHeight);
         }
 
         if (imagePromise) {
             const imageBase64 = await imagePromise;
             message['image'] = {
                 base64: imageBase64,
-                extension: 'jpeg',
+                extension: 'jpeg'
             };
             chrome.tabs.sendMessage(sender.tab.id, {
                 sender: 'asbplayer-extension-to-video',
                 message: {
-                    command: 'screenshot-taken',
+                    command: 'screenshot-taken'
                 },
-                src: request.src,
+                src: command.src
             });
         }
 
@@ -70,8 +70,8 @@ export default class RecordMediaHandler {
             message['audio'] = {
                 base64: audioBase64,
                 extension: 'webm',
-                paddingStart: request.message.audioPaddingStart,
-                paddingEnd: request.message.audioPaddingEnd,
+                paddingStart: command.message.audioPaddingStart,
+                paddingEnd: command.message.audioPaddingEnd
             };
         }
 
@@ -81,12 +81,12 @@ export default class RecordMediaHandler {
                     sender: 'asbplayer-extension-to-player',
                     message: message,
                     tabId: sender.tab.id,
-                    src: request.src,
+                    src: command.src
                 });
             }
         });
 
-        if (request.message.showAnkiUi) {
+        if (command.message.showAnkiUi) {
             chrome.tabs.sendMessage(sender.tab.id, {
                 sender: 'asbplayer-extension-to-video',
                 message: {
@@ -97,7 +97,7 @@ export default class RecordMediaHandler {
                     image: message.image,
                     audio: message.audio,
                 },
-                src: request.src,
+                src: command.src
             });
         }
     }

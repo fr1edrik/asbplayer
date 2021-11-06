@@ -1,22 +1,33 @@
-import { CanvasResizer } from '@project/common';
+import { CanvasResizer } from '@project/common'
+import { Rect } from '../model/Rect';
+import Settings from './Settings';
 
 export default class ImageCapturer {
-    constructor(settings) {
+
+    private readonly settings: Settings;
+    private readonly canvasResizer: CanvasResizer;
+    private lastImageBase64: string;
+
+    constructor(settings: Settings) {
         this.settings = settings;
         this.canvasResizer = new CanvasResizer();
     }
 
-    capture(rect, maxWidth, maxHeight) {
+    capture(rect: Rect, maxWidth: number, maxHeight: number): Promise<string> {
         return new Promise(async (resolve, reject) => {
-            chrome.tabs.captureVisibleTab(null, { format: 'jpeg' }, async (dataUrl) => {
-                const croppedDataUrl = await this._cropAndResize(dataUrl, rect, maxWidth, maxHeight);
-                this.lastImageBase64 = croppedDataUrl.substr(croppedDataUrl.indexOf(',') + 1);
-                resolve(this.lastImageBase64);
-            });
+            chrome.tabs.captureVisibleTab(
+                null,
+                {format: 'jpeg'},
+                async (dataUrl) => {
+                    const croppedDataUrl = await this._cropAndResize(dataUrl, rect, maxWidth, maxHeight);
+                    this.lastImageBase64 = croppedDataUrl.substr(croppedDataUrl.indexOf(',') + 1);
+                    resolve(this.lastImageBase64);
+                }
+            );
         });
     }
 
-    _cropAndResize(dataUrl, rect, maxWidth, maxHeight) {
+    _cropAndResize(dataUrl: string, rect: Rect, maxWidth: number, maxHeight: number): Promise<string> {
         return new Promise(async (resolve, reject) => {
             const cropScreenshot = (await this.settings.get(['cropScreenshot'])).cropScreenshot;
 
@@ -39,7 +50,7 @@ export default class ImageCapturer {
                     try {
                         await this.canvasResizer.resize(canvas, ctx, maxWidth, maxHeight);
                         resolve(canvas.toDataURL('image/jpeg'));
-                    } catch (e) {
+                    } catch(e) {
                         reject(e);
                     }
                 } else {
