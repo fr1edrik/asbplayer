@@ -3,7 +3,7 @@ import { Route, Redirect, Switch, useLocation } from 'react-router-dom';
 import { ThemeProvider, createMuiTheme, makeStyles } from '@material-ui/core/styles';
 import { useWindowSize } from '../hooks/useWindowSize';
 import { red } from '@material-ui/core/colors';
-import { Anki, AudioClip, Image, humanReadableTime } from '@project/common';
+import { Anki, AudioClip, ImageModel, humanReadableTime } from '@project/common';
 import { v4 as uuidv4 } from 'uuid';
 import clsx from 'clsx';
 import Alert from './Alert.js';
@@ -133,11 +133,11 @@ function audioClipFromItem(item, sliderContext, paddingStart, paddingEnd) {
 
 function imageFromItem(item, maxWidth, maxHeight) {
     if (item.image) {
-        return Image.fromBase64(item.subtitleFile.name, item.start, item.image.base64, item.image.extension);
+        return ImageModel.fromBase64(item.subtitleFile.name, item.start, item.image.base64, item.image.extension);
     }
 
     if (item.videoFile) {
-        return Image.fromFile(item.videoFile, item.start, maxWidth, maxHeight);
+        return ImageModel.fromFile(item.videoFile, item.start, maxWidth, maxHeight);
     }
 
     return null;

@@ -6,7 +6,7 @@ export default class ImageCapturer {
 
     private readonly settings: Settings;
     private readonly canvasResizer: CanvasResizer;
-    private lastImageBase64: string;
+    public lastImageBase64: string;
 
     constructor(settings: Settings) {
         this.settings = settings;

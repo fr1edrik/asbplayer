@@ -1,4 +1,6 @@
-export function humanReadableTime(timestamp) {
+import { SubtitleModel } from './Model';
+
+export function humanReadableTime(timestamp): string {
     const totalSeconds = Math.floor(timestamp / 1000);
     const seconds = totalSeconds % 60;
     const minutes = Math.floor(totalSeconds / 60) % 60;
@@ -11,7 +13,12 @@ export function humanReadableTime(timestamp) {
     return minutes + 'm' + String(seconds).padStart(2, '0') + 's';
 }
 
-export function surroundingSubtitles(subtitles, index, countRadius, timeRadius) {
+export function surroundingSubtitles(
+    subtitles: SubtitleModel[],
+    index: number,
+    countRadius: number,
+    timeRadius: number
+): SubtitleModel[] {
     let startIndex;
     let endIndex;
 
@@ -34,7 +41,11 @@ export function surroundingSubtitles(subtitles, index, countRadius, timeRadius) 
     return subtitles.slice(startIndex, endIndex + 1);
 }
 
-export function mockSurroundingSubtitles(middleSubtitle, maxTimestamp, timeRadius) {
+export function mockSurroundingSubtitles(
+    middleSubtitle: SubtitleModel,
+    maxTimestamp: number,
+    timeRadius: number
+): SubtitleModel[] {
     const subtitles = [middleSubtitle];
 
     if (middleSubtitle.end < maxTimestamp) {
@@ -60,7 +71,14 @@ export function mockSurroundingSubtitles(middleSubtitle, maxTimestamp, timeRadiu
     return subtitles;
 }
 
-function atBoundary(subtitles, index, initialIndex, countRadius, timeRadius, sign) {
+function atBoundary(
+    subtitles: SubtitleModel[],
+    index: number,
+    initialIndex: number,
+    countRadius: number,
+    timeRadius: number,
+    sign: boolean
+): boolean {
     let next;
 
     if (sign) {

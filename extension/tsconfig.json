@@ -5,7 +5,7 @@
     "target": "es5"
   },
   "exclude": ["./dist/**/*"],
-  "include": ["./src/**/*", "../common/src/Model.ts"],
+  "include": ["./src/**/*"],
   "references": [
     { "path": "../common/tsconfig.json" }
   ]

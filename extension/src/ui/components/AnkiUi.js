@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Anki, Image, AudioClip, humanReadableTime } from '@project/common';
+import { Anki, ImageModel, AudioClip, humanReadableTime } from '@project/common';
 import { createTheme } from './theme';
 import { ThemeProvider } from '@material-ui/core/styles';
 import Alert from '@material-ui/lab/Alert';
