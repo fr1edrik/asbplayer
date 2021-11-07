@@ -1,27 +1,28 @@
-import { Message } from "./Message";
+import { Message } from './Message';
 
 export interface Command<T extends Message> {
-
-    sender: string,
-    message: T
+    readonly sender: string;
+    readonly message: T;
 }
 
 export interface AsbPlayerToVideoCommand<T extends Message> extends Command<T> {
-
-    sender: "asbplayer",
-    tabId: number,
-    src?: string
+    readonly sender: 'asbplayer';
+    readonly tabId: number;
+    readonly src?: string;
 }
 
 export interface AsbPlayerToVideoCommandV2<T extends Message> extends Command<T> {
-
-    sender: "asbplayerv2",
-    tabId: number,
-    src: string,
+    readonly sender: 'asbplayerv2';
+    readonly tabId: number;
+    readonly src: string;
 }
 
 export interface ExtensionToVideoCommand<T extends Message> extends Command<T> {
+    readonly sender: 'asbplayer-extension-to-video';
+    readonly src: string;
+}
 
-    sender: "asbplayer-extension-to-video",
-    src: string,
+export interface VideoToExtensionCommand<T extends Message> extends Command<T> {
+    readonly sender: 'asbplayer-video';
+    readonly src: string;
 }

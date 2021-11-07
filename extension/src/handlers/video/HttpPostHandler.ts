@@ -1,9 +1,7 @@
-import { Command, HttpPostMessage, Message } from "@project/common";
+import { Command, HttpPostMessage, Message } from '@project/common';
 
 export default class HttpPostHandler {
-
-    constructor() {
-    }
+    constructor() {}
 
     get sender() {
         return 'asbplayer-video';
@@ -18,11 +16,11 @@ export default class HttpPostHandler {
 
         fetch(message.url, {
             method: 'POST',
-            body: JSON.stringify(message.body)
+            body: JSON.stringify(message.body),
         })
-        .then((response) => response.json())
-        .then((json) => sendResponse(json))
-        .catch((e) => sendResponse({error: e.message}))
+            .then((response) => response.json())
+            .then((json) => sendResponse(json))
+            .catch((e) => sendResponse({ error: e.message }));
 
         return true;
     }

@@ -1,5 +1,5 @@
 import { CanvasResizer } from '@project/common'
-import { Rect } from '../model/Rect';
+import { Rect } from '@project/common/src/Rect';
 import Settings from './Settings';
 
 export default class ImageCapturer {

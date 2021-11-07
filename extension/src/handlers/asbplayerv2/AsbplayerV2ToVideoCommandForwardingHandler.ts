@@ -1,9 +1,7 @@
-import { AsbPlayerToVideoCommandV2, Command, ExtensionToVideoCommand, Message } from "@project/common";
+import { AsbPlayerToVideoCommandV2, Command, ExtensionToVideoCommand, Message } from '@project/common';
 
 export default class AsbplayerToVideoCommandForwardingHandler {
-
-    constructor() {
-    }
+    constructor() {}
 
     get sender() {
         return 'asbplayerv2';
@@ -15,12 +13,12 @@ export default class AsbplayerToVideoCommandForwardingHandler {
 
     handle(command: Command<Message>, sender: chrome.runtime.MessageSender) {
         const asbplayerToVideoCommand = command as AsbPlayerToVideoCommandV2<Message>;
-        
+
         if (asbplayerToVideoCommand.tabId) {
             const extensionToVideoCommand: ExtensionToVideoCommand<Message> = {
                 sender: 'asbplayer-extension-to-video',
                 message: asbplayerToVideoCommand.message,
-                src: asbplayerToVideoCommand.src
+                src: asbplayerToVideoCommand.src,
             };
             chrome.tabs.sendMessage(asbplayerToVideoCommand.tabId, extensionToVideoCommand);
         }

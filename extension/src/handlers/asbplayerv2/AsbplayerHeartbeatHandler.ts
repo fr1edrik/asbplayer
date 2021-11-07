@@ -2,7 +2,6 @@ import { AsbplayerHeartbeatMessage, Command, Message } from '@project/common';
 import TabRegistry from '../../services/TabRegistry';
 
 export default class AsbplayerHeartbeatHandler {
-
     private readonly tabRegistry: TabRegistry;
 
     constructor(tabRegistry: TabRegistry) {
@@ -23,7 +22,7 @@ export default class AsbplayerHeartbeatHandler {
         this.tabRegistry.asbplayers[sender.tab.id] = {
             tab: sender.tab,
             id: message.id,
-            timestamp: Date.now()
+            timestamp: Date.now(),
         };
 
         return false;

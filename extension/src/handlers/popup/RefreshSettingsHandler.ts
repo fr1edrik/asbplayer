@@ -1,8 +1,7 @@
-import { Command, ExtensionToVideoCommand, Message, SettingsUpdatedMessage } from "@project/common";
-import TabRegistry from "../../services/TabRegistry";
+import { Command, ExtensionToVideoCommand, Message, SettingsUpdatedMessage } from '@project/common';
+import TabRegistry from '../../services/TabRegistry';
 
 export default class RefreshSettingsHandler {
-
     private readonly tabRegistry: TabRegistry;
 
     constructor(tabRegistry: TabRegistry) {
@@ -22,11 +21,11 @@ export default class RefreshSettingsHandler {
             const settingsUpdatedCommand: ExtensionToVideoCommand<SettingsUpdatedMessage> = {
                 sender: 'asbplayer-extension-to-video',
                 message: {
-                    command: 'settings-updated'
+                    command: 'settings-updated',
                 },
-                src: this.tabRegistry.videoElements[id].src
+                src: this.tabRegistry.videoElements[id].src,
             };
-            
+
             chrome.tabs.sendMessage(this.tabRegistry.videoElements[id].tab.id, settingsUpdatedCommand);
         }
 

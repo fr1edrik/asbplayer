@@ -1,10 +1,9 @@
-import { Command } from '@project/common';
+import { Command, Message, VideoHeartbeatMessage, VideoToExtensionCommand } from '@project/common';
 import TabRegistry from '../../services/TabRegistry';
 
 export default class VideoHeartbeatHandler {
-
     private readonly tabRegistry: TabRegistry;
-    
+
     constructor(tabRegistry: TabRegistry) {
         this.tabRegistry = tabRegistry;
     }
@@ -17,11 +16,14 @@ export default class VideoHeartbeatHandler {
         return 'heartbeat';
     }
 
-    handle(request: Command, sender: chrome.runtime.MessageSender) {
-        this.tabRegistry.videoElements[sender.tab.id + ':' + request.src] = {
+    handle(command: Command<Message>, sender: chrome.runtime.MessageSender): boolean {
+        const videoToExtensionCommand = command as VideoToExtensionCommand<VideoHeartbeatMessage>;
+        this.tabRegistry.videoElements[sender.tab.id + ':' + videoToExtensionCommand.src] = {
             tab: sender.tab,
-            src: request.src,
-            timestamp: Date.now()
+            src: videoToExtensionCommand.src,
+            timestamp: Date.now(),
         };
+
+        return false;
     }
 }

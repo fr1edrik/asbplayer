@@ -1,12 +1,15 @@
 import AudioRecorder from '../../services/AudioRecorder';
 import ImageCapturer from '../../services/ImageCapturer';
 import { v4 as uuidv4 } from 'uuid';
+import { Command, Message, StartRecordingMediaMessage, VideoToExtensionCommand } from '@project/common';
 
 export default class StartRecordingMediaHandler {
-    constructor(audioRecorder, imageCapturer) {
+    private readonly audioRecorder: AudioRecorder;
+    private readonly imageCapturer: ImageCapturer;
+
+    constructor(audioRecorder: AudioRecorder, imageCapturer: ImageCapturer) {
         this.audioRecorder = audioRecorder;
         this.imageCapturer = imageCapturer;
-        this.recording = false;
     }
 
     get sender() {
@@ -17,7 +20,7 @@ export default class StartRecordingMediaHandler {
         return 'start-recording-media';
     }
 
-    async handle(request, sender) {
+    async handle(command: Command<Message>, sender: chrome.runtime.MessageSender) {
         const windowActive = await this._isWindowActive(sender.tab.windowId);
 
         if (!windowActive) {
@@ -25,29 +28,28 @@ export default class StartRecordingMediaHandler {
             return;
         }
 
-        if (request.message.record) {
+        const videoToExtensionCommand = command as VideoToExtensionCommand<StartRecordingMediaMessage>;
+        const message = videoToExtensionCommand.message;
+
+        if (message.record) {
             this.audioRecorder.start();
         }
 
         let imageBase64 = null;
 
-        if (request.message.screenshot) {
-            imageBase64 = await this.imageCapturer.capture(
-                request.message.rect,
-                request.message.maxImageWidth,
-                request.message.maxImageHeight
-            );
+        if (message.screenshot) {
+            imageBase64 = await this.imageCapturer.capture(message.rect, message.maxImageWidth, message.maxImageHeight);
             chrome.tabs.sendMessage(sender.tab.id, {
                 sender: 'asbplayer-extension-to-video',
                 message: {
                     command: 'screenshot-taken',
                 },
-                src: request.src,
+                src: videoToExtensionCommand.src,
             });
         }
 
-        if (!request.message.record) {
-            const subtitle = { text: '', start: request.message.timestamp, end: request.message.timestamp, track: 0 };
+        if (!message.record) {
+            const subtitle = { text: '', start: message.timestamp, end: message.timestamp, track: 0 };
             const id = uuidv4();
 
             let image = null;
@@ -71,12 +73,12 @@ export default class StartRecordingMediaHandler {
                             image: image,
                         },
                         tabId: sender.tab.id,
-                        src: request.src,
+                        src: videoToExtensionCommand.src,
                     });
                 }
             });
 
-            if (request.message.showAnkiUi) {
+            if (message.showAnkiUi) {
                 chrome.tabs.sendMessage(sender.tab.id, {
                     sender: 'asbplayer-extension-to-video',
                     message: {
@@ -86,7 +88,7 @@ export default class StartRecordingMediaHandler {
                         surroundingSubtitles: [],
                         image: image,
                     },
-                    src: request.src,
+                    src: videoToExtensionCommand.src,
                 });
             }
         }
