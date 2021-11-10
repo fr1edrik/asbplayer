@@ -7,3 +7,4 @@ export * from './Message';
 export * from './Command';
 export * from './Model';
 export * from './Util';
+export * from './Settings';

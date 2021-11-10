@@ -1,4 +1,5 @@
-import { RectModel, SubtitleModel, ImageModel, AudioModel } from './Model';
+import { AnkiDialogSliderContext, AnkiSettings } from '.';
+import { RectModel, SubtitleModel, ImageModel, AudioModel, CopiedSubtitleModel, AnkiUiDialogState, AnkiUiContainerCurrentItem } from './Model';
 
 export interface Message {
     readonly command: string;
@@ -78,4 +79,22 @@ export interface ShowAnkUiMessage extends Message {
     readonly surroundingSubtitles: SubtitleModel[];
     readonly image?: ImageModel;
     readonly audio?: AudioModel;
+}
+
+export interface RerecordMediaMessage extends Message {
+    readonly command: 'rerecord-media';
+    readonly duration: number;
+    readonly uiState: AnkiUiDialogState;
+    readonly audioPaddingStart: number;
+    readonly audioPaddingEnd: number;
+    readonly currentItem: AnkiUiContainerCurrentItem;
+    readonly playbackRate: number;
+    readonly timestamp: number;
+}
+
+export interface ShowAnkiUiAfterRerecordMessage extends Message {
+    command: 'show-anki-ui-after-rerecord';
+    id: string;
+    uiState: AnkiUiDialogState;
+    audio: AudioModel;
 }
