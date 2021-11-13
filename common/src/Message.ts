@@ -1,5 +1,13 @@
 import { AnkiDialogSliderContext, AnkiSettings } from '.';
-import { RectModel, SubtitleModel, ImageModel, AudioModel, CopiedSubtitleModel, AnkiUiDialogState, AnkiUiContainerCurrentItem } from './Model';
+import {
+    RectModel,
+    SubtitleModel,
+    ImageModel,
+    AudioModel,
+    CopiedSubtitleModel,
+    AnkiUiDialogState,
+    AnkiUiContainerCurrentItem,
+} from './Model';
 
 export interface Message {
     readonly command: string;
@@ -97,4 +105,19 @@ export interface ShowAnkiUiAfterRerecordMessage extends Message {
     id: string;
     uiState: AnkiUiDialogState;
     audio: AudioModel;
+}
+
+export interface PlayerSyncMessage extends Message {
+    command: 'syncv2';
+    subtitles: SubtitleModel[];
+}
+
+export interface ExtensionSyncMessage extends Message {
+    command: 'sync';
+    subtitles: SubtitleModel[];
+}
+
+export interface OffsetMessage extends Message {
+    command: 'offset';
+    value: number;
 }

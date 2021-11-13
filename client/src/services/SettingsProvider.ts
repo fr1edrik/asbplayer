@@ -1,3 +1,5 @@
+import { AsbplayerSettingsProvider } from '@project/common';
+
 const defaultAnkiConnectUrl = 'http://127.0.0.1:8765';
 const defaultSubtitleSize = 36;
 const defaultSubtitleColor = '#ffffff';
@@ -41,7 +43,7 @@ const volumeKey = 'volume';
 const preferMp3Key = 'preferMp3';
 const themeTypeKey = 'themeType';
 
-export default class SettingsProvider {
+export default class SettingsProvider implements AsbplayerSettingsProvider {
     get settings() {
         return {
             ankiConnectUrl: this.ankiConnectUrl,

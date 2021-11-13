@@ -27,6 +27,7 @@ export interface SubtitleSettings {
     readonly subtitleColor: string;
     readonly subtitleOutlineThickness: number;
     readonly subtitleOutlineColor: string;
+    readonly subtitleBackgroundColor: string;
     readonly subtitleBackgroundOpacity: number;
     readonly subtitleFontFamily: string;
     readonly subtitlePreview: string;
@@ -63,6 +64,7 @@ export interface AsbplayerSettingsProvider {
     subtitleOutlineThickness: number;
     subtitleOutlineColor: string;
     subtitleBackgroundOpacity: number;
+    subtitleBackgroundColor: string;
     subtitleFontFamily: string;
     subtitlePreview: string;
     volume: number;

@@ -60,7 +60,7 @@ export default class Settings {
         });
     }
 
-    async set(settings) {
+    async set(settings): Promise<void> {
         for (const key in settings) {
             if (!(key in defaults)) {
                 throw new Error('Invalid key ' + key);

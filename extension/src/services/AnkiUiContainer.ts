@@ -1,4 +1,6 @@
-import FrameBridgeClient from '../services/FrameBridgeClient';
+import { AnkiSettings, AnkiUiContainerCurrentItem, AudioModel, ImageModel, SubtitleModel } from '@project/common';
+import Binding from './Binding';
+import FrameBridgeClient from './FrameBridgeClient';
 
 // We need to write the HTML into the iframe manually so that the iframe keeps it's about:blank URL.
 // Otherwise, Chrome won't insert content scripts into the iframe (e.g. Yomichan won't work).
@@ -20,11 +22,19 @@ async function html() {
 }
 
 export default class AnkiUiContainer {
-    constructor() {
-        this.currentItem = {};
-    }
+    ankiSettings?: AnkiSettings;
+    themeType: 'dark' | 'light' = 'dark';
 
-    async show(context, subtitle, surroundingSubtitles, image, audio, id) {
+    private currentItem?: AnkiUiContainerCurrentItem;
+
+    async show(
+        context: Binding,
+        subtitle: SubtitleModel,
+        surroundingSubtitles: SubtitleModel[],
+        image: ImageModel | undefined,
+        audio: AudioModel | undefined,
+        id: string | undefined
+    ): Promise<void> {
         if (!this.ankiSettings) {
             throw new Error('Unable to show Anki UI because settings are missing.');
             return;

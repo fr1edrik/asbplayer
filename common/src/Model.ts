@@ -11,6 +11,8 @@ export interface SubtitleModel {
     readonly text: string;
     readonly start: number;
     readonly end: number;
+    readonly originalStart: number;
+    readonly originalEnd: number;
     readonly track: number;
 }
 
